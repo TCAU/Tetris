@@ -50,14 +50,15 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="TetrisGraphics.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="TetrisGrid.cs" />
     <Compile Include="TetrisShape.cs" />
     <Compile Include="TetrisShapeBehaviour.cs" />
     <Compile Include="TetrisShapeFactory.cs" />
-    <Compile Include="Tile.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

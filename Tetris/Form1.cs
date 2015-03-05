@@ -12,57 +12,31 @@ namespace Tetris
 {
     public partial class Form1 : Form
     {
-        private int canvasMaxWidth;
-        private int canvasMaxHeight;
-        private Tile tile = new Tile(); // to be deleted
+        private TetrisGrid grid;
         private TetrisShape shape;
         private TetrisShapeFactory shapeFactory = new TetrisShapeFactory();
-
-        private bool[,] grid;
-        private Brush[,] brushGrid;
-        private int completedRows;
-        private List<int> indexesOfCompletedRows = new List<int>();
 
         public Form1()
         {
             InitializeComponent();
-            new Input();
-            new Settings();
-
-            canvasMaxHeight = pictureBoxCanvas.Height / Settings.tileHeight;
-            canvasMaxWidth = pictureBoxCanvas.Width/ Settings.tileWidth;
-
-            grid =  new bool[canvasMaxWidth,canvasMaxHeight]; // [10,20]
-            brushGrid = new Brush[canvasMaxWidth, canvasMaxHeight]; // [10,20]
+            grid = new TetrisGrid(pictureBoxCanvas.Height, pictureBoxCanvas.Width);
 
             playerInputTimer.Tick += CheckForPlayerInput;
             gameTimer.Tick += Update;
             GameStart();
         }
+
         private void GameStart()
         {
             labelGameOver.Visible = false;
             labelGameOver2.Visible = false;
-            new Settings();
-            clearGrid();
-            completedRows = 0;
-        }
-
-        private void clearGrid()
-        {
-            for (int i = 0; i < canvasMaxWidth; i++)
-            {
-                for (int j = 0; j < canvasMaxHeight; j++)
-                {
-                    grid[i, j] = false;
-                    brushGrid[i, j] = null;
-                }
-            }
+            Settings.NewSettings();
+            grid.clearGrid();
         }
 
         private void Update(object sender, EventArgs e)
         {
-            checkForGameOver();            
+            grid.checkForGameOver(shape);            
             if(Settings.isGameOver)
             {
                 labelGameOver.Text = "\n\nGame Over.\nScore : " + Settings.score + "\n press Enter to restart";
@@ -80,82 +54,17 @@ namespace Tetris
                     labelLevel.Text = (Settings.level + 1).ToString();
                     gameTimer.Interval = 1000 / (Settings.level + 1);
                 }
-                tile = new Tile { X = 4, Y = 2 };
                 shape = shapeFactory.GetShape();
-
             }
             else 
             {
-                if (completedRows > 0)
+                if (grid.completedRows > 0)
                 {
-                    ProcessCompletedRows();
+                    grid.ProcessCompletedRows();
                     labelScore.Text = Settings.score.ToString();
                 }
                 AutoFall();
             }
-        }
-
-        private void checkForGameOver()
-        {
-            if (shape!=null)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    if (grid[shape.cords[i, 0], shape.cords[i, 1]] == true)
-                    {
-                        Settings.isGameOver = true;
-                    }
-                }                
-            }
-
-            for (int i = 0; i < canvasMaxWidth; i++)
-            {
-                if(grid[i,0]==true)
-                    Settings.isGameOver = true;
-            }
-        }
-
-        private void ProcessCompletedRows()
-        {
-                switch (completedRows)
-                {
-                    case 1:
-                        Settings.score += 50;
-                        break;
-                    case 2:
-                        Settings.score += 150;
-                        break;
-                    case 3:
-                        Settings.score += 450;
-                        break;
-                    case 4:
-                        Settings.score += 1350;
-                        break;
-                    default:
-                        break;
-                }
-
-                while (completedRows > 0)
-                {
-                    for (int i = indexesOfCompletedRows[0]; i > 0; i--)
-                    {
-                        for (int j = 0; j < canvasMaxWidth; j++)
-                        {
-                            grid[j, i] = grid[j, i - 1];
-                            brushGrid[j, i] = brushGrid[j, i - 1];
-
-                        }
-                    }
-
-                    for (int i = 0; i < canvasMaxWidth; i++)
-                    {
-                        grid[i, 0] = false;
-                        brushGrid[i, 0] = null;
-                    }
-
-                    indexesOfCompletedRows.Remove(indexesOfCompletedRows[0]);
-                    completedRows--;
-                }
         }
 
         private void CheckForPlayerInput(object sender, EventArgs e)
@@ -192,11 +101,18 @@ namespace Tetris
                 }
                 else if (Input.isKeyPressed(Keys.Up))
                 {
-                    TetrisShapeBehaviour.tryRotatingShape(shape, grid, canvasMaxWidth, canvasMaxHeight);
+                    TetrisShapeBehaviour.tryRotatingShape(shape, grid.boolgrid, grid.canvasMaxWidth, grid.canvasMaxHeight);
+                }
+                else if (Input.isKeyPressed(Keys.Enter))
+                {
+                    if(TetrisShapeBehaviour.dropDownInstantly(shape, grid.boolgrid, grid.brushGrid, grid.canvasMaxHeight))
+                    {
+                        shape = null;
+                    }
                 }
             }
 
-            CheckForCompletedRows();
+            grid.CheckForCompletedRows();
             pictureBoxCanvas.Invalidate();
             pictureBoxNextShape.Invalidate();
         }
@@ -207,7 +123,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 0] == 0 || grid[shape.cords[i, 0] - 1, shape.cords[i, 1]] == true)
+                if (shape.cords[i, 0] == 0 || (shape.cords[i, 1] >=0 && grid.boolgrid[shape.cords[i, 0] - 1, shape.cords[i, 1]] == true))
                 {
                     return false;
                 }                                 
@@ -219,7 +135,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 0] == canvasMaxWidth - 1 || grid[shape.cords[i, 0] + 1, shape.cords[i, 1]] == true)
+                if (shape.cords[i, 0] == grid.canvasMaxWidth - 1 || (shape.cords[i, 1] >= 0 && grid.boolgrid[shape.cords[i, 0] + 1, shape.cords[i, 1]] == true))
                 {
                     return false;
                 }                                 
@@ -231,7 +147,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 1] == canvasMaxHeight - 1 || grid[shape.cords[i, 0], shape.cords[i, 1] + 1] == true)
+                if (shape.cords[i, 1] == grid.canvasMaxHeight - 1 || (shape.cords[i, 1] >=0 && grid.boolgrid[shape.cords[i, 0], shape.cords[i, 1] + 1] == true))
                 {
                     return false;
                 }
@@ -240,7 +156,6 @@ namespace Tetris
         }
 
         #endregion
-
 
         private void AutoFall()
         {
@@ -253,32 +168,8 @@ namespace Tetris
             }
             else 
             {
-                TetrisShapeBehaviour.AddToGrid(shape, grid, brushGrid);
+                TetrisShapeBehaviour.AddToGrid(shape, grid.boolgrid, grid.brushGrid);
                 shape = null;
-            }
-        }
-
-        private void CheckForCompletedRows()
-        {
-            int filledCell = 0;
-
-            for (int i = 0; i < canvasMaxHeight; i++)
-            {
-                if(grid[0,i]==true)
-                {
-                    for (int j = 0; j < canvasMaxWidth; j++)
-                    {
-                        if (grid[j, i] == true)
-                            filledCell++;
-                    }
-
-                    if (filledCell == 10 && !indexesOfCompletedRows.Contains(i))
-                    {
-                        indexesOfCompletedRows.Add(i);
-                        completedRows++;
-                    }
-                }
-                filledCell = 0;
             }
         }
 
@@ -299,25 +190,22 @@ namespace Tetris
             labelTime.Text = x.ToString();
         }
 
-
-        #region Graphics
-
         private void pictureBoxCanvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics canvas = e.Graphics;
             Pen pen = new Pen(Color.Black, 2);
             pen.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
-            
-            if(shape!=null)
+
+            if (shape != null)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (shape.cords[i, 0] >= 0 && shape.cords[i, 1] >=0)
+                    if (shape.cords[i, 0] >= 0 && shape.cords[i, 1] >= 0)
                     {
                         canvas.FillRectangle(shape.color, shape.cords[i, 0] * Settings.tileWidth,
                                                 shape.cords[i, 1] * Settings.tileHeight,
                                                 Settings.tileWidth, Settings.tileHeight);
-                       
+
                         canvas.DrawRectangle(pen, shape.cords[i, 0] * Settings.tileWidth,
                                                 shape.cords[i, 1] * Settings.tileHeight,
                                                 Settings.tileWidth, Settings.tileHeight);
@@ -325,20 +213,18 @@ namespace Tetris
                 }
             }
 
-            for (int i = 0; i < canvasMaxHeight; i++)
-            {
-                for (int j = 0; j < canvasMaxWidth; j++)
+            for (int i = 0; i < grid.canvasMaxHeight; i++)
+                for (int j = 0; j < grid.canvasMaxWidth; j++)
                 {
-
-                    if (indexesOfCompletedRows.Contains(i))
+                    if (grid.indexesOfCompletedRows.Contains(i))
                     {
                         canvas.FillRectangle(Brushes.White, j * Settings.tileWidth,
                                                 i * Settings.tileHeight,
                                                 Settings.tileWidth, Settings.tileHeight);
                     }
-                    else if (grid[j, i] == true)
+                    else if (grid.boolgrid[j, i] == true)
                     {
-                        canvas.FillRectangle(brushGrid[j,i], j * Settings.tileWidth,
+                        canvas.FillRectangle(grid.brushGrid[j, i], j * Settings.tileWidth,
                                                 i * Settings.tileHeight,
                                                 Settings.tileWidth, Settings.tileHeight);
 
@@ -347,15 +233,13 @@ namespace Tetris
                                                 Settings.tileWidth, Settings.tileHeight);
                     }
                 }
-            }
-
         }
 
         private void pictureBoxNextShape_Paint(object sender, PaintEventArgs e)
         {
             Graphics canvas = e.Graphics;
-            Pen pen = new Pen(Color.Black, 2);
-            pen.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
+            Pen pBlack = new Pen(Color.Black, 2);
+            pBlack.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
 
             TetrisShape nextShape = shapeFactory.currentShape;
 
@@ -363,21 +247,15 @@ namespace Tetris
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (nextShape.cords[i, 0] >= 0 && nextShape.cords[i, 1] >= 0)
-                    {
-                        canvas.FillRectangle(nextShape.color, (nextShape.cords[i, 0] - 3) * Settings.tileWidth,
-                                                nextShape.cords[i, 1] * Settings.tileHeight,
-                                                Settings.tileWidth, Settings.tileHeight);
+                    canvas.FillRectangle(nextShape.color, (nextShape.cords[i, 0] - 3) * Settings.tileWidth,
+                                            (nextShape.cords[i, 1] + 2) * Settings.tileHeight,
+                                            Settings.tileWidth, Settings.tileHeight);
 
-                        canvas.DrawRectangle(pen, (nextShape.cords[i, 0] - 3) * Settings.tileWidth,
-                                                nextShape.cords[i, 1] * Settings.tileHeight,
-                                                Settings.tileWidth, Settings.tileHeight);
-                    }
+                    canvas.DrawRectangle(pBlack, (nextShape.cords[i, 0] - 3) * Settings.tileWidth,
+                                            (nextShape.cords[i, 1] + 2) * Settings.tileHeight,
+                                            Settings.tileWidth, Settings.tileHeight);
                 }
             }
-
         }
-
-        #endregion  
     }
 }

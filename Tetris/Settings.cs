@@ -7,36 +7,27 @@ using System.Threading.Tasks;
 namespace Tetris
 {
     // static class with game settings
-    class Settings
+    static class Settings
     {
-        public static int tileWidth;
-        public static int tileHeight;
+        public static int tileWidth = 25;
+        public static int tileHeight = 25;
         public static int score = 0;
-        public static bool isGameOver;
-        public static int level;
-        public static int scoreNeededForNextLevel;
+        public static bool isGameOver = false;
+        public static int level = 0;
+        public static int scoreNeededForNextLevel = 5000;
 
-        public static int basePointsSingle;
-        public static int basePointsDouble;
-        public static int basePointsTriple;
-        public static int basePointsTetris;
+        public static int basePointsSingle = 100;
+        public static int basePointsDouble = 100;
+        public static int basePointsTriple = 100;
+        public static int basePointsTetris = 100;
 
-        public Settings()
-        {
-            
+        public static void NewSettings()
+        {            
             level = 0;
             scoreNeededForNextLevel = 5000;
-
-            tileHeight = tileWidth = 25;
             score = 0;
-            basePointsSingle = 100;
-            basePointsDouble = 100;
-            basePointsTriple = 100;
-            basePointsTetris = 100;
-
             isGameOver = false;
         }
-
 
     }
 }

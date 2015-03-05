@@ -11,31 +11,27 @@ namespace Tetris
 
     // class that makes new TetrisShapes 
 
-    enum TetrisShapes { I = 0, O, L, J, S, Z, T }
+    enum TetrisShapesEnum { I = 0, O, L, J, S, Z, T }
 
     class TetrisShapeFactory
     {
         private Random random;
-        private TetrisShapes tetrisShapeEnum;
-        private TetrisShapes nextShapeEnum;
+        private TetrisShapesEnum tetrisShapeEnum;
+        private TetrisShapesEnum nextShapeEnum;
         private int brushColorIndex;
 
         public TetrisShape currentShape;
         public TetrisShape nextShape;
-        private Tile tile;
         
         public TetrisShapeFactory()
         {
             random = new Random();
-            tile = new Tile { X = 4, Y = 2 };
-            currentShape = new TetrisShape(tile);
-            nextShape = new TetrisShape(tile);
 
-            tetrisShapeEnum = (TetrisShapes)random.Next(7);
-            nextShapeEnum = (TetrisShapes)random.Next(7);
+            tetrisShapeEnum = (TetrisShapesEnum)random.Next(7);
+            nextShapeEnum = (TetrisShapesEnum)random.Next(7);
 
-            currentShape = GenerateShape(tile);
-            nextShape = GenerateShape(tile);
+            currentShape = GenerateShape();
+            nextShape = GenerateShape();
 
             brushColorIndex = random.Next(10);
         }
@@ -45,101 +41,96 @@ namespace Tetris
             TetrisShape temp = currentShape;
 
             currentShape = nextShape;
-            nextShape = GenerateShape(tile);
+            nextShape = GenerateShape();
 
             return temp;
         }
 
-        private TetrisShape GenerateShape(Tile tile)
+        private TetrisShape GenerateShape()
         {
-            TetrisShape shape = new TetrisShape(tile);
-            AddAdjacentTiles(tetrisShapeEnum, shape, tile);
+            TetrisShape shape = new TetrisShape();
+            AddAdjacentTiles(tetrisShapeEnum, shape);
             shape.color = PickRandomBrush();
-            moveShapeQueue();
+            tetrisShapeEnum = nextShapeEnum;
+            nextShapeEnum = (TetrisShapesEnum)random.Next(7);
             return shape;
         }
 
-        private void moveShapeQueue()
-        {
-            tetrisShapeEnum = nextShapeEnum;
-            nextShapeEnum = (TetrisShapes)random.Next(7);
-        }
-
-        private void AddAdjacentTiles(TetrisShapes tetrisShapeEnum, TetrisShape shape, Tile tile)
+        private void AddAdjacentTiles(TetrisShapesEnum tetrisShapeEnum, TetrisShape shape)
         {
             switch (tetrisShapeEnum)
             {
-                case TetrisShapes.I:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y + 1;
+                case TetrisShapesEnum.I:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] + 1;
 
-                    shape.cords[2, 0] = tile.X;
-                    shape.cords[2, 1] = tile.Y - 1;
+                    shape.cords[2, 0] = shape.cords[0,0];
+                    shape.cords[2, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[3, 0] = tile.X;
-                    shape.cords[3, 1] = tile.Y - 2;
+                    shape.cords[3, 0] = shape.cords[0,0];
+                    shape.cords[3, 1] = shape.cords[0,1] - 2;
                     break;
-                case TetrisShapes.O:
+                case TetrisShapesEnum.O:
                     
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[2, 0] = tile.X + 1;
-                    shape.cords[2, 1] = tile.Y - 1;
+                    shape.cords[2, 0] = shape.cords[0,0] + 1;
+                    shape.cords[2, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[3, 0] = tile.X + 1;
-                    shape.cords[3, 1] = tile.Y;
+                    shape.cords[3, 0] = shape.cords[0,0] + 1;
+                    shape.cords[3, 1] = shape.cords[0,1];
                     break;
-                case TetrisShapes.L:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                case TetrisShapesEnum.L:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[2, 0] = tile.X;
-                    shape.cords[2, 1] = tile.Y - 2;
+                    shape.cords[2, 0] = shape.cords[0,0];
+                    shape.cords[2, 1] = shape.cords[0,1] - 2;
 
-                    shape.cords[3, 0] = tile.X + 1;
-                    shape.cords[3, 1] = tile.Y;
+                    shape.cords[3, 0] = shape.cords[0,0] + 1;
+                    shape.cords[3, 1] = shape.cords[0,1];
 
                     break;
-                case TetrisShapes.J:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                case TetrisShapesEnum.J:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[2, 0] = tile.X;
-                    shape.cords[2, 1] = tile.Y - 2;
+                    shape.cords[2, 0] = shape.cords[0,0];
+                    shape.cords[2, 1] = shape.cords[0,1] - 2;
                     
-                    shape.cords[3, 0] = tile.X - 1;
-                    shape.cords[3, 1] = tile.Y;
+                    shape.cords[3, 0] = shape.cords[0,0] - 1;
+                    shape.cords[3, 1] = shape.cords[0,1];
                     break;
-                case TetrisShapes.S:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                case TetrisShapesEnum.S:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
                     
-                    shape.cords[2, 0] = tile.X - 1;
-                    shape.cords[2, 1] = tile.Y - 1;
+                    shape.cords[2, 0] = shape.cords[0,0] - 1;
+                    shape.cords[2, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[3, 0] = tile.X + 1;
-                    shape.cords[3, 1] = tile.Y;
+                    shape.cords[3, 0] = shape.cords[0,0] + 1;
+                    shape.cords[3, 1] = shape.cords[0,1];
                     break;
-                case TetrisShapes.Z:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                case TetrisShapesEnum.Z:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[2, 0] = tile.X - 1;
-                    shape.cords[2, 1] = tile.Y;
+                    shape.cords[2, 0] = shape.cords[0,0] - 1;
+                    shape.cords[2, 1] = shape.cords[0,1];
                     
-                    shape.cords[3, 0] = tile.X + 1;
-                    shape.cords[3, 1] = tile.Y - 1;
+                    shape.cords[3, 0] = shape.cords[0,0] + 1;
+                    shape.cords[3, 1] = shape.cords[0,1] - 1;
                     break;
-                case TetrisShapes.T:
-                    shape.cords[1, 0] = tile.X;
-                    shape.cords[1, 1] = tile.Y - 1;
+                case TetrisShapesEnum.T:
+                    shape.cords[1, 0] = shape.cords[0,0];
+                    shape.cords[1, 1] = shape.cords[0,1] - 1;
 
-                    shape.cords[2, 0] = tile.X - 1;
-                    shape.cords[2, 1] = tile.Y;
+                    shape.cords[2, 0] = shape.cords[0,0] - 1;
+                    shape.cords[2, 1] = shape.cords[0,1];
                     
-                    shape.cords[3, 0] = tile.X + 1;
-                    shape.cords[3, 1] = tile.Y;
+                    shape.cords[3, 0] = shape.cords[0,0] + 1;
+                    shape.cords[3, 1] = shape.cords[0,1];
                     break;
                 default:
                     break;
