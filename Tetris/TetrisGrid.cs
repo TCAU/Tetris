@@ -41,17 +41,6 @@ namespace Tetris
 
         public void checkForGameOver(TetrisShape shape)
         {
-            if (shape != null)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    if (shape.cords[i, 1] >= 0 && boolgrid[shape.cords[i, 0], shape.cords[i, 1]] == true)
-                    {
-                        Settings.isGameOver = true;
-                    }
-                }
-            }
-
             for (int i = 0; i < canvasMaxWidth; i++)
             {
                 if (boolgrid[i, 0] == true)

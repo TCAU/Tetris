@@ -8,6 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
+// TODO
+// play tetris song
+// add a sound effect to clearing a row
+// smoother row clear
+
 namespace Tetris
 {
     public partial class Form1 : Form
@@ -36,7 +42,6 @@ namespace Tetris
 
         private void Update(object sender, EventArgs e)
         {
-            grid.checkForGameOver(shape);            
             if(Settings.isGameOver)
             {
                 labelGameOver.Text = "\n\nGame Over.\nScore : " + Settings.score + "\n press Enter to restart";
@@ -69,6 +74,7 @@ namespace Tetris
 
         private void CheckForPlayerInput(object sender, EventArgs e)
         {
+            grid.checkForGameOver(shape);            
             if (Settings.isGameOver && Input.isKeyPressed(Keys.Enter))
             {
                 gameTimer.Start();
@@ -159,17 +165,21 @@ namespace Tetris
 
         private void AutoFall()
         {
-            if (noCollisionsBelow(shape))
+            if (!Settings.isGameOver)
             {
-                for (int i = 0; i < 4; i++)
+                if (noCollisionsBelow(shape))
                 {
-                    shape.cords[i, 1]++;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        shape.cords[i, 1]++;
+                    }
                 }
-            }
-            else 
-            {
-                TetrisShapeBehaviour.AddToGrid(shape, grid.boolgrid, grid.brushGrid);
-                shape = null;
+                else
+                {
+                    TetrisShapeBehaviour.AddToGrid(shape, grid.boolgrid, grid.brushGrid);
+                    shape = null;
+                }
+
             }
         }
 
