@@ -11,8 +11,9 @@ namespace Tetris
     {
         public static int tileWidth = 25;
         public static int tileHeight = 25;
-        public static int score = 0;
         public static bool isGameOver = false;
+
+        public static int score = 0;
         public static int level = 0;
         public static int scoreNeededForNextLevel = 5000;
 

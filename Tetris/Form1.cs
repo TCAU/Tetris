@@ -16,19 +16,16 @@ using System.Windows.Forms;
 
 namespace Tetris
 {
-    public partial class Form1 : Form
+    public partial class TetrisGame : Form
     {
         private TetrisGrid grid;
         private TetrisShape shape;
         private TetrisShapeFactory shapeFactory = new TetrisShapeFactory();
 
-        public Form1()
+        public TetrisGame()
         {
             InitializeComponent();
             grid = new TetrisGrid(pictureBoxCanvas.Height, pictureBoxCanvas.Width);
-
-            playerInputTimer.Tick += CheckForPlayerInput;
-            gameTimer.Tick += Update;
             GameStart();
         }
 
@@ -40,44 +37,12 @@ namespace Tetris
             grid.clearGrid();
         }
 
-        private void Update(object sender, EventArgs e)
-        {
-            if(Settings.isGameOver)
-            {
-                labelGameOver.Text = "\n\nGame Over.\nScore : " + Settings.score + "\n press Enter to restart";
-                labelGameOver.Visible = true;
-                labelGameOver2.Visible = true;
-                gameTimer.Stop();
-                labelTime.Text = "0";
-            }
-            else if (shape == null)
-            {
-                if (Settings.score > Settings.scoreNeededForNextLevel)
-                {
-                    Settings.scoreNeededForNextLevel += 5000;
-                    Settings.level++;
-                    labelLevel.Text = (Settings.level + 1).ToString();
-                    gameTimer.Interval = 1000 / (Settings.level + 1);
-                }
-                shape = shapeFactory.GetShape();
-            }
-            else 
-            {
-                if (grid.completedRows > 0)
-                {
-                    grid.ProcessCompletedRows();
-                    labelScore.Text = Settings.score.ToString();
-                }
-                AutoFall();
-            }
-        }
-
         private void CheckForPlayerInput(object sender, EventArgs e)
         {
-            grid.checkForGameOver(shape);            
             if (Settings.isGameOver && Input.isKeyPressed(Keys.Enter))
             {
                 gameTimer.Start();
+                actualTimer.Start();
                 GameStart();
             }
 
@@ -107,18 +72,17 @@ namespace Tetris
                 }
                 else if (Input.isKeyPressed(Keys.Up))
                 {
-                    TetrisShapeBehaviour.tryRotatingShape(shape, grid.boolgrid, grid.canvasMaxWidth, grid.canvasMaxHeight);
+                    TetrisShapeBehaviour.tryRotatingShape(shape, grid.boolGrid, grid.canvasMaxWidth, grid.canvasMaxHeight);
                 }
                 else if (Input.isKeyPressed(Keys.Enter))
                 {
-                    if(TetrisShapeBehaviour.dropDownInstantly(shape, grid.boolgrid, grid.brushGrid, grid.canvasMaxHeight))
+                    if(TetrisShapeBehaviour.dropDownInstantly(shape, grid.boolGrid, grid.brushGrid, grid.canvasMaxHeight))
                     {
                         shape = null;
                     }
                 }
             }
 
-            grid.CheckForCompletedRows();
             pictureBoxCanvas.Invalidate();
             pictureBoxNextShape.Invalidate();
         }
@@ -129,7 +93,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 0] == 0 || (shape.cords[i, 1] >=0 && grid.boolgrid[shape.cords[i, 0] - 1, shape.cords[i, 1]] == true))
+                if (shape.cords[i, 0] == 0 || (shape.cords[i, 1] >=0 && grid.boolGrid[shape.cords[i, 0] - 1, shape.cords[i, 1]] == true))
                 {
                     return false;
                 }                                 
@@ -141,7 +105,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 0] == grid.canvasMaxWidth - 1 || (shape.cords[i, 1] >= 0 && grid.boolgrid[shape.cords[i, 0] + 1, shape.cords[i, 1]] == true))
+                if (shape.cords[i, 0] == grid.canvasMaxWidth - 1 || (shape.cords[i, 1] >= 0 && grid.boolGrid[shape.cords[i, 0] + 1, shape.cords[i, 1]] == true))
                 {
                     return false;
                 }                                 
@@ -153,7 +117,7 @@ namespace Tetris
         {
             for (int i = 0; i < 4; i++)
             {
-                if (shape.cords[i, 1] == grid.canvasMaxHeight - 1 || (shape.cords[i, 1] >=0 && grid.boolgrid[shape.cords[i, 0], shape.cords[i, 1] + 1] == true))
+                if (shape.cords[i, 1] == grid.canvasMaxHeight - 1 || (shape.cords[i, 1] >=0 && grid.boolGrid[shape.cords[i, 0], shape.cords[i, 1] + 1] == true))
                 {
                     return false;
                 }
@@ -165,21 +129,17 @@ namespace Tetris
 
         private void AutoFall()
         {
-            if (!Settings.isGameOver)
+            if (noCollisionsBelow(shape))
             {
-                if (noCollisionsBelow(shape))
+                for (int i = 0; i < 4; i++)
                 {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        shape.cords[i, 1]++;
-                    }
+                    shape.cords[i, 1]++;
                 }
-                else
-                {
-                    TetrisShapeBehaviour.AddToGrid(shape, grid.boolgrid, grid.brushGrid);
-                    shape = null;
-                }
-
+            }
+            else
+            {
+                TetrisShapeBehaviour.AddNewShapeToGrid(shape, grid.boolGrid, grid.brushGrid);
+                shape = null;
             }
         }
 
@@ -195,9 +155,39 @@ namespace Tetris
 
         private void GameTimerIncrement_Timer(object sender, EventArgs e)
         {
-            int x = System.Convert.ToInt32(labelTime.Text);
-            x++;
-            labelTime.Text = x.ToString();
+            //update
+            if (Settings.isGameOver)
+            {
+                labelGameOver.Text = "\n\nGame Over.\nScore : " + Settings.score + "\n press Enter to restart";
+                labelGameOver.Visible = true;
+                labelGameOver2.Visible = true;
+                gameTimer.Stop();
+                actualTimer.Stop();
+                labelTime.Text = "0";
+            }
+            AutoFall();
+        }
+
+        private void completedRowCheckTimer_Tick(object sender, EventArgs e)
+        {
+            if (shape == null)
+            {
+                if (Settings.score > Settings.scoreNeededForNextLevel)
+                {
+                    Settings.scoreNeededForNextLevel += 5000;
+                    Settings.level++;
+                    labelLevel.Text = (Settings.level + 1).ToString();
+                    gameTimer.Interval = 1000 / (Settings.level + 1);
+                }
+                shape = shapeFactory.GetNextShape();
+            }
+            else if (grid.CheckForCompletedRows())
+            {
+                grid.ProcessCompletedRows();
+                labelScore.Text = Settings.score.ToString();
+                pictureBoxCanvas.Invalidate();
+                pictureBoxNextShape.Invalidate();
+            }
         }
 
         private void pictureBoxCanvas_Paint(object sender, PaintEventArgs e)
@@ -232,7 +222,7 @@ namespace Tetris
                                                 i * Settings.tileHeight,
                                                 Settings.tileWidth, Settings.tileHeight);
                     }
-                    else if (grid.boolgrid[j, i] == true)
+                    else if (grid.boolGrid[j, i] == true)
                     {
                         canvas.FillRectangle(grid.brushGrid[j, i], j * Settings.tileWidth,
                                                 i * Settings.tileHeight,
@@ -266,6 +256,14 @@ namespace Tetris
                                             Settings.tileWidth, Settings.tileHeight);
                 }
             }
+        }
+
+        private void actualTimer_Tick(object sender, EventArgs e)
+        {
+            ///increment game timer
+            int x = System.Convert.ToInt32(labelTime.Text);
+            x++;
+            labelTime.Text = x.ToString();
         }
     }
 }

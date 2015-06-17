@@ -9,9 +9,14 @@ using System.Reflection;
 namespace Tetris
 {
 
-    // class that makes new TetrisShapes 
-
+    /// <summary>
+    /// enum for the seven types of shapes
+    /// </summary>
     enum TetrisShapesEnum { I = 0, O, L, J, S, Z, T }
+
+    /// <summary>
+    ///  Class that makes new TetrisShapes 
+    /// </summary>
 
     class TetrisShapeFactory
     {
@@ -36,7 +41,7 @@ namespace Tetris
             brushColorIndex = random.Next(10);
         }
 
-        public TetrisShape GetShape()
+        public TetrisShape GetNextShape()
         {
             TetrisShape temp = currentShape;
 

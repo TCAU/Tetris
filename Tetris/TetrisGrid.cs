@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Tetris
 {
-    class TetrisGrid
+    public class TetrisGrid
     {
         public int canvasMaxWidth;
         public int canvasMaxHeight;
 
-        public bool[,] boolgrid;
+        public bool[,] boolGrid;
         public  Brush[,] brushGrid;
 
         public int completedRows;
@@ -23,8 +23,8 @@ namespace Tetris
             canvasMaxHeight = height / Settings.tileHeight;
             canvasMaxWidth = width / Settings.tileWidth;
 
-            boolgrid = new bool[canvasMaxWidth, canvasMaxHeight]; // [10,20]
-            brushGrid = new Brush[canvasMaxWidth, canvasMaxHeight]; // [10,20]
+            boolGrid = new bool[canvasMaxWidth, canvasMaxHeight]; // should be [10,20]
+            brushGrid = new Brush[canvasMaxWidth, canvasMaxHeight]; // should be [10,20]
         }
 
 
@@ -33,19 +33,10 @@ namespace Tetris
             for (int i = 0; i < canvasMaxWidth; i++)
                 for (int j = 0; j < canvasMaxHeight; j++)
                 {
-                    boolgrid[i, j] = false;
+                    boolGrid[i, j] = false;
                     brushGrid[i, j] = null;
                 }
             completedRows = 0;
-        }
-
-        public void checkForGameOver(TetrisShape shape)
-        {
-            for (int i = 0; i < canvasMaxWidth; i++)
-            {
-                if (boolgrid[i, 0] == true)
-                    Settings.isGameOver = true;
-            }
         }
 
         public void ProcessCompletedRows()
@@ -74,7 +65,7 @@ namespace Tetris
                 {
                     for (int j = 0; j < canvasMaxWidth; j++)
                     {
-                        boolgrid[j, i] = boolgrid[j, i - 1];
+                        boolGrid[j, i] = boolGrid[j, i - 1];
                         brushGrid[j, i] = brushGrid[j, i - 1];
 
                     }
@@ -82,7 +73,7 @@ namespace Tetris
 
                 for (int i = 0; i < canvasMaxWidth; i++)
                 {
-                    boolgrid[i, 0] = false;
+                    boolGrid[i, 0] = false;
                     brushGrid[i, 0] = null;
                 }
 
@@ -91,17 +82,16 @@ namespace Tetris
             }
         }
 
-        public void CheckForCompletedRows()
+        public bool CheckForCompletedRows()
         {
-            int filledCell = 0;
-
             for (int i = 0; i < canvasMaxHeight; i++)
             {
-                if (boolgrid[0, i] == true)
+                int filledCell = 0;
+                if (boolGrid[0, i] == true)
                 {
                     for (int j = 0; j < canvasMaxWidth; j++)
                     {
-                        if (boolgrid[j, i] == true)
+                        if (boolGrid[j, i] == true)
                             filledCell++;
                     }
 
@@ -111,8 +101,9 @@ namespace Tetris
                         completedRows++;
                     }
                 }
-                filledCell = 0;
             }
+
+            return (completedRows > 0);
         }
 
     }

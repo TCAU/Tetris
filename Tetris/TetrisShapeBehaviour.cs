@@ -9,7 +9,7 @@ namespace Tetris
 {
     // static class that contains methods for manipulating TetrisShapes
 
-    class TetrisShapeBehaviour
+    static class TetrisShapeBehaviour
     {
         public static void ShiftRight(TetrisShape shape)
         {
@@ -50,7 +50,7 @@ namespace Tetris
                     shape.cords[j, 1] += i;
                 }
 
-                AddToGrid(shape, grid, brushgrid);
+                AddNewShapeToGrid(shape, grid, brushgrid);
                 return true;
             }
             return false;
@@ -72,13 +72,20 @@ namespace Tetris
             return true;
         }
 
-        public static void AddToGrid(TetrisShape shape, bool[,] grid, Brush[,] brushgrid)
+        public static void AddNewShapeToGrid(TetrisShape shape, bool[,] grid, Brush[,] brushgrid)
         {
-            for (int i = 0; i < 4; i++)
+            try
             {
-                grid[shape.cords[i, 0], shape.cords[i, 1]] = true;
-                brushgrid[shape.cords[i, 0], shape.cords[i, 1]] = shape.color;
+                for (int i = 0; i < 4; i++)
+                {
+                    grid[shape.cords[i, 0], shape.cords[i, 1]] = true;
+                    brushgrid[shape.cords[i, 0], shape.cords[i, 1]] = shape.color;
+                }
             }
+            catch (IndexOutOfRangeException e)
+            {
+                Settings.isGameOver = true;
+            }                        
         }
 
 

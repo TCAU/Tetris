@@ -1,6 +1,6 @@
 ﻿namespace Tetris
 {
-    partial class Form1
+    partial class TetrisGame
     {
         /// <summary>
         /// Required designer variable.
@@ -42,6 +42,8 @@
             this.labelGameOver2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.labelLevel = new System.Windows.Forms.Label();
+            this.completedRowCheckTimer = new System.Windows.Forms.Timer(this.components);
+            this.actualTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxCanvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxNextShape)).BeginInit();
             this.SuspendLayout();
@@ -79,6 +81,7 @@
             // 
             this.playerInputTimer.Enabled = true;
             this.playerInputTimer.Interval = 50;
+            this.playerInputTimer.Tick += new System.EventHandler(this.CheckForPlayerInput);
             // 
             // label2
             // 
@@ -161,7 +164,19 @@
             this.labelLevel.TabIndex = 10;
             this.labelLevel.Text = "1";
             // 
-            // Form1
+            // completedRowCheckTimer
+            // 
+            this.completedRowCheckTimer.Enabled = true;
+            this.completedRowCheckTimer.Interval = 10;
+            this.completedRowCheckTimer.Tick += new System.EventHandler(this.completedRowCheckTimer_Tick);
+            // 
+            // actualTimer
+            // 
+            this.actualTimer.Enabled = true;
+            this.actualTimer.Interval = 1000;
+            this.actualTimer.Tick += new System.EventHandler(this.actualTimer_Tick);
+            // 
+            // TetrisGame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -177,7 +192,7 @@
             this.Controls.Add(this.labelScore);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBoxCanvas);
-            this.Name = "Form1";
+            this.Name = "TetrisGame";
             this.Text = "Tetris";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);
@@ -203,6 +218,8 @@
         private System.Windows.Forms.Label labelGameOver2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelLevel;
+        private System.Windows.Forms.Timer completedRowCheckTimer;
+        private System.Windows.Forms.Timer actualTimer;
     }
 }
 
