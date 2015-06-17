@@ -4,4 +4,4 @@ Update: added instant drop when you press enter and fixed some bugs.
 
 Screenshot:
 
-![my image](https://github.com/TCAU/Tetris/blob/master/img/screenshot.png?raw=true)
+![my image](https://github.com/TCAU/Tetris/blob/master/img/screenshot1.png?raw=true)
